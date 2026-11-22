@@ -179,6 +179,25 @@ private Planejamento planejamento;
         // Envolve a tabela em um JScrollPane (necessário no Swing para exibir o cabeçalho e barra de rolagem)
         return new JScrollPane(tabelaDespesas);
     }
+    // Configura os eventos de clique nos botões e na seleção da tabela
+    private void configurarEventos() {
+        btnIncluir.addActionListener(e -> incluir());
+        btnEditar.addActionListener(e -> editar());
+        btnExcluir.addActionListener(e -> excluir());
+        btnLimpar.addActionListener(e -> limparCampos());
+        tabelaDespesas.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) carregarLinhaSelecionada();
+        });
+    }
+
+    // Inclui uma nova despesa no planejamento após validar o formulário
+    private void incluir() {
+        Despesa d = lerFormulario();
+        if (d == null) return;
+        planejamento.incluirDespesa(d);
+        atualizarTabela();
+        limparCampos();
+    }
 
         public void atualizarParticipantes() {
             listModelParticipantes.clear();
