@@ -259,7 +259,8 @@ private Planejamento planejamento;
             txtValor.setText(String.format("%.2f", d.getValorCentavos() / 100.0).replace(".", ","));
             listParticipantes.clearSelection();
             for (int i = 0; i < listModelParticipantes.size(); i++) {
-                int cod = Integer.parseInt(listModelParticipantes.get(i).split(" - "));
+               int cod = Integer.parseInt(listModelParticipantes.get(i).split(" - ")[0]);
+
                 if (d.getParticipantes().contains(cod)) listParticipantes.addSelectionInterval(i, i);
             }
         }
