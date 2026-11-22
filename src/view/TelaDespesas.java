@@ -1,19 +1,23 @@
-// Define que esta classe pertence ao pacote 'view' (camada visual do padrão MVC)
-package view;
+// Define que esta classe pertence ao pacote 'telas' (camada visual do padrão MVC)
+package com.mycompany.cabenobolso.telas;
 
+// Importa todas as classes do pacote modelo (Planejamento, Despesa, DespesaFixa, DespesaPorPessoa, Participante)
+import com.mycompany.cabenobolso.modelo.*;
 // Importa todos os componentes visuais do Swing (JPanel, JButton, JTextField, JTable, etc.)
 import javax.swing.*;
 // Importa o modelo padrão de dados usado para controlar as linhas e colunas da JTable
 import javax.swing.table.DefaultTableModel;
 // Importa classes de layout e dimensões gráficas (BorderLayout, GridBagLayout, Insets, Dimension)
 import java.awt.*;
-// Importa a interface List para manipular coleções de textos (participantes selecionados)
+// Importa coleções para manipular listas e conjuntos de códigos de participantes
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
-// Declara a classe TelaDespesas herdando de JPanel (para poder ser colocada dentro de uma aba ou janela)
-public class TelaDespesas extends JPanel {
+// Referência ao planejamento compartilhado por todo o sistema
+private Planejamento planejamento;
 
-    // Campo de texto para o usuário digitar o nome/descrição da despesa
+// Campo de texto para o usuário digitar o nome/descrição da despesa
     private JTextField txtDescricao;
     // Campo de texto para o usuário digitar o valor numérico da despesa
     private JTextField txtValor;
@@ -39,21 +43,21 @@ public class TelaDespesas extends JPanel {
     private DefaultTableModel tableModel;
 
     // Construtor da classe: executado automaticamente quando 'new TelaDespesas()' é chamado
-    public TelaDespesas() {
-        // Define o gerenciador de layout principal como BorderLayout com 10 pixels de espaçamento
+    // Construtor da classe: recebe o mesmo Planejamento usado nas outras telas do sistema
+    public TelaDespesas(Planejamento planejamento) {
+        this.planejamento = planejamento;
         setLayout(new BorderLayout(10, 10));
-        // Cria uma margem interna invisível de 10 pixels nas quatro bordas do painel
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        // Adiciona o painel do formulário na região superior (NORTH) da tela
         add(criarPainelFormulario(), BorderLayout.NORTH);
-        // Adiciona o painel da tabela na região central (CENTER), ocupando o espaço restante
         add(criarPainelTabela(), BorderLayout.CENTER);
-        // Chama o método que ativa os eventos internos de interface (clique na tabela e limpar)
-        configurarEventosBasicos();
+        configurarEventos();
+        atualizarParticipantes();
+        atualizarTabela();
+        limparCampos();
     }
 
-    // Método privado que constrói e organiza todos os campos e botões do formulário
+
+        // Método privado que constrói e organiza todos os campos e botões do formulário
     private JPanel criarPainelFormulario() {
         // Cria um subpainel usando GridBagLayout (permite alinhar itens em grade flexível)
         JPanel painel = new JPanel(new GridBagLayout());
@@ -174,21 +178,56 @@ public class TelaDespesas extends JPanel {
         return new JScrollPane(tabelaDespesas);
     }
 
-    // Método privado que configura comportamentos visuais internos da própria tela
-    private void configurarEventosBasicos() {
-        // Adiciona um ouvinte que detecta quando o usuário clica em alguma linha da tabela
-        tabelaDespesas.getSelectionModel().addListSelectionListener(e -> {
-            // Obtém o índice da linha clicada (-1 se nenhuma estiver selecionada)
-            int linha = tabelaDespesas.getSelectedRow();
-            // Verifica se uma linha válida foi selecionada
-            if (linha >= 0) {
-                // Copia o texto da coluna 1 (Descrição) para o campo txtDescricao
-                txtDescricao.setText(tableModel.getValueAt(linha, 1).toString());
-                // Seleciona no JComboBox o mesmo tipo que está na coluna 2 (Tipo)
-                cbTipo.setSelectedItem(tableModel.getValueAt(linha, 2).toString());
-                // Copia o valor da coluna 3 (Valor) para o campo txtValor
-                txtValor.setText(tableModel.getValueAt(linha, 3).toString());
+        public void atualizarParticipantes() {
+            listModelParticipantes.clear();
+            for (Participante p : planejamento.getParticipantes()) {
+                listModelParticipantes.addElement(p.getCodigo() + " - " + p.getNome());
             }
-        });}}
+        }
 
-// Adiciona um evento ao botão Limpar para apagar os campos quando clicado
+        public void atualizarTabela() {
+            tableModel.setRowCount(0);
+            List<Despesa> lista = planejamento.getDespesas();
+            for (int i = 0; i < lista.size(); i++) {
+                Despesa d = lista.get(i);
+                String tipo = (d instanceof DespesaFixa) ? "Fixa" : "Por pessoa";
+                String valor = String.format("%.2f", d.getValorCentavos() / 100.0).replace(".", ",");
+                tableModel.addRow(new Object[]{i + 1, d.getDescricao(), tipo, valor, d.getParticipantes()});
+            }
+        }
+        private Despesa lerFormulario() {
+            String desc = txtDescricao.getText().trim();
+            if (desc.isEmpty()) { aviso("Informe a descrição."); return null; }
+            long valor;
+            try { valor = Math.round(Double.parseDouble(txtValor.getText().replace(",", ".")) * 100); }
+            catch (Exception e) { aviso("Valor inválido."); return null; }
+            if (valor <= 0) { aviso("O valor deve ser maior que zero."); return null; }
+            Set<Integer> cods = new TreeSet<>();
+            for (String s : listParticipantes.getSelectedValuesList()) {
+                cods.add(Integer.parseInt(s.split(" - ")[0]));
+            }
+            if (cods.isEmpty()) { aviso("Selecione ao menos um participante."); return null; }
+            return cbTipo.getSelectedIndex() == 0 ? new DespesaFixa(desc, valor, cods) : new DespesaPorPessoa(desc, valor, cods);
+        }
+        private void carregarLinhaSelecionada() {
+            int linha = tabelaDespesas.getSelectedRow();
+            if (linha < 0) return;
+            Despesa d = planejamento.getDespesas().get(linha);
+            txtDescricao.setText(d.getDescricao());
+            cbTipo.setSelectedIndex(d instanceof DespesaFixa ? 0 : 1);
+            txtValor.setText(String.format("%.2f", d.getValorCentavos() / 100.0).replace(".", ","));
+            listParticipantes.clearSelection();
+            for (int i = 0; i < listModelParticipantes.size(); i++) {
+                int cod = Integer.parseInt(listModelParticipantes.get(i).split(" - "));
+                if (d.getParticipantes().contains(cod)) listParticipantes.addSelectionInterval(i, i);
+            }
+        }
+
+        private void limparCampos() {
+            tabelaDespesas.clearSelection();
+            txtDescricao.setText(""); txtValor.setText("");
+            cbTipo.setSelectedIndex(0); listParticipantes.clearSelection();
+        }
+
+        private void aviso(String msg) { JOptionPane.showMessageDialog(this, msg, "Atenção", JOptionPane.WARNING_MESSAGE); }
+}
