@@ -179,46 +179,68 @@ private Planejamento planejamento;
         // Envolve a tabela em um JScrollPane (necessário no Swing para exibir o cabeçalho e barra de rolagem)
         return new JScrollPane(tabelaDespesas);
     }
-    // Configura os eventos de clique nos botões e na seleção da tabela
+    // Método privado que conecta os cliques dos botões e da tabela às suas respectivas ações
     private void configurarEventos() {
+        // Chama o método incluir() quando o botão "Incluir" for clicado
         btnIncluir.addActionListener(e -> incluir());
+        // Chama o método editar() quando o botão "Salvar Edição" for clicado
         btnEditar.addActionListener(e -> editar());
+        // Chama o método excluir() quando o botão "Excluir" for clicado
         btnExcluir.addActionListener(e -> excluir());
+        // Chama o método limparCampos() quando o botão "Limpar" for clicado
         btnLimpar.addActionListener(e -> limparCampos());
+        // Adiciona um ouvinte para detectar quando o usuário seleciona uma linha na tabela
         tabelaDespesas.getSelectionModel().addListSelectionListener(e -> {
+            // Evita executar duas vezes durante o clique e preenche o formulário com a linha selecionada
             if (!e.getValueIsAdjusting()) carregarLinhaSelecionada();
         });
     }
 
-    // Inclui uma nova despesa no planejamento após validar o formulário
+    // Método privado responsável por cadastrar uma nova despesa no planejamento
     private void incluir() {
+        // Lê e valida os dados digitados no formulário, montando um objeto Despesa
         Despesa d = lerFormulario();
+        // Se algum dado estiver inválido (retornou null), interrompe a inclusão
         if (d == null) return;
+        // Adiciona a nova despesa dentro do objeto Planejamento compartilhado
         planejamento.incluirDespesa(d);
+        // Atualiza as linhas da tabela visual para exibir a despesa recém-cadastrada
         atualizarTabela();
+        // Limpa os campos do formulário para um próximo cadastro
         limparCampos();
     }
-        // Atualiza a despesa selecionada na tabela
+
+    // Método privado responsável por salvar as alterações de uma despesa já existente
     private void editar() {
+        // Obtém o índice da linha atualmente selecionada na tabela (-1 se nenhuma estiver marcada)
         int linha = tabelaDespesas.getSelectedRow();
+        // Se nenhuma linha estiver selecionada, exibe um aviso e cancela a edição
         if (linha < 0) { aviso("Selecione uma despesa na tabela."); return; }
+        // Lê e valida os novos dados preenchidos no formulário
         Despesa nova = lerFormulario();
+        // Se houver erro de validação, interrompe sem alterar a despesa antiga
         if (nova == null) return;
+        // Substitui a despesa na posição 'linha' dentro do Planejamento
         planejamento.editarDespesa(linha, nova);
+        // Atualiza a tabela visual com os dados modificados
         atualizarTabela();
+        // Limpa os campos e desmarca a seleção da tabela
         limparCampos();
     }
 
-    // Remove a despesa selecionada na tabela
+    // Método privado responsável por remover a despesa selecionada na tabela
     private void excluir() {
+        // Obtém o índice da linha selecionada na tabela
         int linha = tabelaDespesas.getSelectedRow();
+        // Se nenhuma despesa estiver selecionada, avisa o usuário e interrompe
         if (linha < 0) { aviso("Selecione uma despesa para excluir."); return; }
+        // Remove a despesa correspondente do Planejamento
         planejamento.excluirDespesa(linha);
+        // Atualiza a tabela visual removendo a linha excluída
         atualizarTabela();
+        // Limpa os campos do formulário
         limparCampos();
     }
-
-
         public void atualizarParticipantes() {
             listModelParticipantes.clear();
             for (Participante p : planejamento.getParticipantes()) {
