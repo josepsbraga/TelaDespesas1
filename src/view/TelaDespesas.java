@@ -198,6 +198,26 @@ private Planejamento planejamento;
         atualizarTabela();
         limparCampos();
     }
+        // Atualiza a despesa selecionada na tabela
+    private void editar() {
+        int linha = tabelaDespesas.getSelectedRow();
+        if (linha < 0) { aviso("Selecione uma despesa na tabela."); return; }
+        Despesa nova = lerFormulario();
+        if (nova == null) return;
+        planejamento.editarDespesa(linha, nova);
+        atualizarTabela();
+        limparCampos();
+    }
+
+    // Remove a despesa selecionada na tabela
+    private void excluir() {
+        int linha = tabelaDespesas.getSelectedRow();
+        if (linha < 0) { aviso("Selecione uma despesa para excluir."); return; }
+        planejamento.excluirDespesa(linha);
+        atualizarTabela();
+        limparCampos();
+    }
+
 
         public void atualizarParticipantes() {
             listModelParticipantes.clear();
