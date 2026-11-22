@@ -15,6 +15,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 // Referência ao planejamento compartilhado por todo o sistema
+public class TelaDespesas extends JPanel {
+
 private Planejamento planejamento;
 
 // Campo de texto para o usuário digitar o nome/descrição da despesa
