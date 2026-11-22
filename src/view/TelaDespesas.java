@@ -1,5 +1,6 @@
 // Define que esta classe pertence ao pacote 'telas' (camada visual do padrão MVC)
-package com.mycompany.cabenobolso.telas;
+package com.mycompany.cabenobolso.TelasParticipantes;
+
 
 // Importa todas as classes do pacote modelo (Planejamento, Despesa, DespesaFixa, DespesaPorPessoa, Participante)
 import com.mycompany.cabenobolso.modelo.*;
