@@ -241,57 +241,103 @@ private Planejamento planejamento;
         // Limpa os campos do formulário
         limparCampos();
     }
-        public void atualizarParticipantes() {
-            listModelParticipantes.clear();
-            for (Participante p : planejamento.getParticipantes()) {
-                listModelParticipantes.addElement(p.getCodigo() + " - " + p.getNome());
-            }
+           // Método público que carrega os participantes do planejamento na lista visual (JList)
+    public void atualizarParticipantes() {
+        // Remove todos os itens atuais da lista para evitar duplicação
+        listModelParticipantes.clear();
+        // Percorre cada participante cadastrado no objeto Planejamento
+        for (Participante p : planejamento.getParticipantes()) {
+            // Adiciona no formato "código - nome" (ex: "1 - Maria") para facilitar a identificação
+            listModelParticipantes.addElement(p.getCodigo() + " - " + p.getNome());
         }
+    }
 
-        public void atualizarTabela() {
-            tableModel.setRowCount(0);
-            List<Despesa> lista = planejamento.getDespesas();
-            for (int i = 0; i < lista.size(); i++) {
-                Despesa d = lista.get(i);
-                String tipo = (d instanceof DespesaFixa) ? "Fixa" : "Por pessoa";
-                String valor = String.format("%.2f", d.getValorCentavos() / 100.0).replace(".", ",");
-                tableModel.addRow(new Object[]{i + 1, d.getDescricao(), tipo, valor, d.getParticipantes()});
-            }
+    // Método público que recarrega todas as despesas do planejamento na tabela visual
+    public void atualizarTabela() {
+        // Apaga todas as linhas atuais da tabela antes de preencher novamente
+        tableModel.setRowCount(0);
+        // Obtém a lista atualizada de despesas armazenadas no Planejamento
+        List<Despesa> lista = planejamento.getDespesas();
+        // Percorre a lista de despesas pelo índice
+        for (int i = 0; i < lista.size(); i++) {
+            // Pega a despesa na posição atual
+            Despesa d = lista.get(i);
+            // Verifica a subclasse da despesa para exibir "Fixa" ou "Por pessoa" na coluna Tipo
+            String tipo = (d instanceof DespesaFixa) ? "Fixa" : "Por pessoa";
+            // Converte o valor armazenado em centavos (long) para reais formatados com vírgula
+            String valor = String.format("%.2f", d.getValorCentavos() / 100.0).replace(".", ",");
+            // Adiciona uma nova linha na tabela com ID sequencial, descrição, tipo, valor e códigos dos participantes
+            tableModel.addRow(new Object[]{i + 1, d.getDescricao(), tipo, valor, d.getParticipantes()});
         }
-        private Despesa lerFormulario() {
-            String desc = txtDescricao.getText().trim();
-            if (desc.isEmpty()) { aviso("Informe a descrição."); return null; }
-            long valor;
-            try { valor = Math.round(Double.parseDouble(txtValor.getText().replace(",", ".")) * 100); }
-            catch (Exception e) { aviso("Valor inválido."); return null; }
-            if (valor <= 0) { aviso("O valor deve ser maior que zero."); return null; }
-            Set<Integer> cods = new TreeSet<>();
-            for (String s : listParticipantes.getSelectedValuesList()) {
-                cods.add(Integer.parseInt(s.split(" - ")[0]));
-            }
-            if (cods.isEmpty()) { aviso("Selecione ao menos um participante."); return null; }
-            return cbTipo.getSelectedIndex() == 0 ? new DespesaFixa(desc, valor, cods) : new DespesaPorPessoa(desc, valor, cods);
-        }
-        private void carregarLinhaSelecionada() {
-            int linha = tabelaDespesas.getSelectedRow();
-            if (linha < 0) return;
-            Despesa d = planejamento.getDespesas().get(linha);
-            txtDescricao.setText(d.getDescricao());
-            cbTipo.setSelectedIndex(d instanceof DespesaFixa ? 0 : 1);
-            txtValor.setText(String.format("%.2f", d.getValorCentavos() / 100.0).replace(".", ","));
-            listParticipantes.clearSelection();
-            for (int i = 0; i < listModelParticipantes.size(); i++) {
-               int cod = Integer.parseInt(listModelParticipantes.get(i).split(" - ")[0]);
+    }
 
-                if (d.getParticipantes().contains(cod)) listParticipantes.addSelectionInterval(i, i);
-            }
+    // Método privado que valida os campos do formulário e cria o objeto Despesa correspondente
+    private Despesa lerFormulario() {
+        // Captura o texto da descrição removendo espaços extras nas pontas
+        String desc = txtDescricao.getText().trim();
+        // Valida se a descrição está vazia; se estiver, avisa e retorna null
+        if (desc.isEmpty()) { aviso("Informe a descrição."); return null; }
+        // Variável que guardará o valor convertido em centavos
+        long valor;
+        try {
+            // Troca vírgula por ponto, converte para double, multiplica por 100 e arredonda para centavos
+            valor = Math.round(Double.parseDouble(txtValor.getText().replace(",", ".")) * 100);
+        } catch (Exception e) {
+            // Caso o usuário digite letras ou formato inválido, exibe aviso e interrompe
+            aviso("Valor inválido."); return null;
         }
-
-        private void limparCampos() {
-            tabelaDespesas.clearSelection();
-            txtDescricao.setText(""); txtValor.setText("");
-            cbTipo.setSelectedIndex(0); listParticipantes.clearSelection();
+        // Impede valores negativos ou iguais a zero
+        if (valor <= 0) { aviso("O valor deve ser maior que zero."); return null; }
+        // Cria um conjunto ordenado (TreeSet) para armazenar os códigos dos participantes selecionados
+        Set<Integer> cods = new TreeSet<>();
+        // Percorre cada item selecionado pelo usuário na lista visual de participantes
+        for (String s : listParticipantes.getSelectedValuesList()) {
+            // Separa o texto "código - nome" pelo hífen e converte a primeira parte (código) para inteiro
+            cods.add(Integer.parseInt(s.split(" - ")[0]));
         }
+        // Valida se pelo menos um participante foi selecionado
+        if (cods.isEmpty()) { aviso("Selecione ao menos um participante."); return null; }
+        // Instancia DespesaFixa (índice 0) ou DespesaPorPessoa (índice 1) conforme escolhido no JComboBox
+        return cbTipo.getSelectedIndex() == 0 ? new DespesaFixa(desc, valor, cods) : new DespesaPorPessoa(desc, valor, cods);
+    }
+    // Método privado que preenche o formulário quando o usuário clica em uma linha da tabela
+    private void carregarLinhaSelecionada() {
+        // Obtém o índice da linha selecionada na tabela
+        int linha = tabelaDespesas.getSelectedRow();
+        // Se nenhuma linha estiver selecionada, não faz nada
+        if (linha < 0) return;
+        // Busca o objeto Despesa correspondente no Planejamento
+        Despesa d = planejamento.getDespesas().get(linha);
+        // Preenche o campo de descrição com o nome da despesa
+        txtDescricao.setText(d.getDescricao());
+        // Seleciona "Fixa" (0) ou "Por pessoa" (1) no menu suspenso conforme o tipo da despesa
+        cbTipo.setSelectedIndex(d instanceof DespesaFixa ? 0 : 1);
+        // Converte os centavos para reais com vírgula e exibe no campo de valor
+        txtValor.setText(String.format("%.2f", d.getValorCentavos() / 100.0).replace(".", ","));
+        // Limpa seleções anteriores na lista de participantes antes de marcar os atuais
+        listParticipantes.clearSelection();
+        // Percorre todos os participantes exibidos na lista visual
+        for (int i = 0; i < listModelParticipantes.size(); i++) {
+            // Extrai o código numérico do participante da linha atual da lista
+            int cod = Integer.parseInt(listModelParticipantes.get(i).split(" - ")[0]);
+            // Se esse código estiver associado à despesa, seleciona o participante na lista
+            if (d.getParticipantes().contains(cod)) listParticipantes.addSelectionInterval(i, i);
+        }
+    }
 
-        private void aviso(String msg) { JOptionPane.showMessageDialog(this, msg, "Atenção", JOptionPane.WARNING_MESSAGE); }
+    // Método privado que limpa todos os campos do formulário e desmarca a tabela
+    private void limparCampos() {
+        // Remove a seleção de linha na tabela de despesas
+        tabelaDespesas.clearSelection();
+        // Apaga os textos digitados nos campos descrição e valor
+        txtDescricao.setText(""); txtValor.setText("");
+        // Volta o tipo selecionado para a primeira opção ("Fixa")
+        cbTipo.setSelectedIndex(0);
+        // Desmarca todos os participantes selecionados na lista
+        listParticipantes.clearSelection();
+    }
+
+    // Método auxiliar privado para exibir janelas de alerta padrão ao usuário
+    private void aviso(String msg) { JOptionPane.showMessageDialog(this, msg, "Atenção", JOptionPane.WARNING_MESSAGE); }
+// Fecha a declaração da classe TelaDespesas
 }
