@@ -229,7 +229,7 @@ private Planejamento planejamento;
         // Limpa os campos e desmarca a seleção da tabela
         limparCampos();
     }
-    // Método privado responsável por remover a despesa selecionada na tabela
+    // Remove a despesa selecionada após validação de seleção e confirmação do usuário
     private void excluir() {
         int linha = tabelaDespesas.getSelectedRow();
         if (linha < 0) { aviso("Selecione uma despesa para excluir."); return; }
