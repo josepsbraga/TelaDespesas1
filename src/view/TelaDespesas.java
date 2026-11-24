@@ -242,6 +242,11 @@ private Planejamento planejamento;
         }
     }
 
+    // Método público para o Controller sincronizar participantes e despesas ao abrir a tela
+    public void atualizarTela() {
+        atualizarParticipantes();
+        atualizarTabela();
+    }
 
     
     // Método público que carrega os participantes do planejamento na lista visual (JList)
