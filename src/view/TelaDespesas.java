@@ -230,20 +230,8 @@ private Planejamento planejamento;
         limparCampos();
     }
 
-    // Método privado responsável por remover a despesa selecionada na tabela
-    private void excluir() {
-        // Obtém o índice da linha selecionada na tabela
-        int linha = tabelaDespesas.getSelectedRow();
-        // Se nenhuma despesa estiver selecionada, avisa o usuário e interrompe
-        if (linha < 0) { aviso("Selecione uma despesa para excluir."); return; }
-        // Remove a despesa correspondente do Planejamento
-        planejamento.excluirDespesa(linha);
-        // Atualiza a tabela visual removendo a linha excluída
-        atualizarTabela();
-        // Limpa os campos do formulário
-        limparCampos();
-    }
-           // Método público que carrega os participantes do planejamento na lista visual (JList)
+    
+    // Método público que carrega os participantes do planejamento na lista visual (JList)
     public void atualizarParticipantes() {
         // Remove todos os itens atuais da lista para evitar duplicação
         listModelParticipantes.clear();
