@@ -279,6 +279,21 @@ private Planejamento planejamento;
 
         }
     }
+    // Converte os códigos dos participantes em texto legível (ex: "1 (Ana), 2 (João)")
+private String formatarParticipantes(Set<Integer> codigos) {
+    StringBuilder sb = new StringBuilder();
+    for (Integer cod : codigos) {
+        for (Participante p : planejamento.getParticipantes()) {
+            if (p.getCodigo() == cod) {
+                if (sb.length() > 0) sb.append(", ");
+                sb.append(cod).append(" (").append(p.getNome()).append(")");
+                break;
+            }
+        }
+    }
+    return sb.toString();
+}
+
 
     // Método privado que valida os campos do formulário e cria o objeto Despesa correspondente
     private Despesa lerFormulario() {
