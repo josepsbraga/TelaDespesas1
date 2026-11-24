@@ -49,7 +49,7 @@ private Planejamento planejamento;
     // Construtor da classe: executado automaticamente quando 'new TelaDespesas()' é chamado
     // Construtor da classe: recebe o mesmo Planejamento usado nas outras telas do sistema
     public TelaDespesas(Planejamento planejamento) {
-        this.planejamento = planejamento;
+       this.planejamento = Objects.requireNonNull(planejamento, "Planejamento não pode ser nulo.");
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         add(criarPainelFormulario(), BorderLayout.NORTH);
