@@ -275,7 +275,8 @@ private Planejamento planejamento;
             // Converte o valor armazenado em centavos (long) para reais formatados com vírgula
             String valor = String.format("%.2f", d.getValorCentavos() / 100.0).replace(".", ",");
             // Adiciona uma nova linha na tabela com ID sequencial, descrição, tipo, valor e códigos dos participantes
-            tableModel.addRow(new Object[]{i + 1, d.getDescricao(), tipo, valor, d.getParticipantes()});
+            tableModel.addRow(new Object[]{i + 1, d.getDescricao(), tipo, valor, formatarParticipantes(d.getParticipantes())});
+
         }
     }
 
