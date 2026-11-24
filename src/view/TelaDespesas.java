@@ -301,17 +301,25 @@ private String formatarParticipantes(Set<Integer> codigos) {
         String desc = txtDescricao.getText().trim();
         // Valida se a descrição está vazia; se estiver, avisa e retorna null
         if (desc.isEmpty()) { aviso("Informe a descrição."); return null; }
-        // Variável que guardará o valor convertido em centavos
+                // Variável que guardará o valor convertido em centavos
         long valor;
         try {
-            // Troca vírgula por ponto, converte para double, multiplica por 100 e arredonda para centavos
-            valor = Math.round(Double.parseDouble(txtValor.getText().replace(",", ".")) * 100);
-        } catch (Exception e) {
-            // Caso o usuário digite letras ou formato inválido, exibe aviso e interrompe
-            aviso("Valor inválido."); return null;
+            // Remove pontos de milhar, troca vírgula por ponto e converte para centavos
+            String valorLimpo = txtValor.getText().trim().replace(".", "").replace(",", ".");
+            valor = Math.round(Double.parseDouble(valorLimpo) * 100);
+        } catch (NumberFormatException e) {
+            // Caso o usuário digite letras ou formato inválido, exibe aviso e foca o campo
+            aviso("Valor inválido.");
+            txtValor.requestFocus();
+            return null;
         }
         // Impede valores negativos ou iguais a zero
-        if (valor <= 0) { aviso("O valor deve ser maior que zero."); return null; }
+        if (valor <= 0) {
+            aviso("O valor deve ser maior que zero.");
+            txtValor.requestFocus();
+            return null;
+        }
+
         // Cria um conjunto ordenado (TreeSet) para armazenar os códigos dos participantes selecionados
         Set<Integer> cods = new TreeSet<>();
         // Percorre cada item selecionado pelo usuário na lista visual de participantes
