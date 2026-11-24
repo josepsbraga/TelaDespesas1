@@ -229,6 +229,19 @@ private Planejamento planejamento;
         // Limpa os campos e desmarca a seleção da tabela
         limparCampos();
     }
+    // Método privado responsável por remover a despesa selecionada na tabela
+    private void excluir() {
+        int linha = tabelaDespesas.getSelectedRow();
+        if (linha < 0) { aviso("Selecione uma despesa para excluir."); return; }
+        Despesa d = planejamento.getDespesas().get(linha);
+        int opcao = JOptionPane.showConfirmDialog(this, "Deseja excluir \"" + d.getDescricao() + "\"?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        if (opcao == JOptionPane.YES_OPTION) {
+            planejamento.excluirDespesa(linha);
+            atualizarTabela();
+            limparCampos();
+        }
+    }
+
 
     
     // Método público que carrega os participantes do planejamento na lista visual (JList)
